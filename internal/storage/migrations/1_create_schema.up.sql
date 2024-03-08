@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS `payments` (
   `amount` DECIMAL(10, 2) NOT NULL,
   `status` ENUM('pending', 'successful', 'failed') NOT NULL DEFAULT 'pending',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (customer_id) REFERENCES customers(id),
   FOREIGN KEY (merchant_id) REFERENCES merchants(id)
 );
@@ -35,6 +37,8 @@ CREATE TABLE IF NOT EXISTS `refunds` (
   `amount` DECIMAL(10, 2) NOT NULL,
   `status` ENUM('pending', 'processed', 'failed') NOT NULL DEFAULT 'pending',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (payment_id) REFERENCES payments(id)
 );
 
@@ -45,5 +49,7 @@ CREATE TABLE IF NOT EXISTS `credit_cards` (
   `card_type` VARCHAR(50) NOT NULL,
   `customer_id` INT NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (customer_id) REFERENCES customers(id)
 );

@@ -7,7 +7,9 @@ import (
 	"os"
 
 	"github.com/arielcr/payment-gateway/internal/api"
+	"github.com/arielcr/payment-gateway/internal/api/handlers"
 	"github.com/arielcr/payment-gateway/internal/config"
+	"github.com/arielcr/payment-gateway/internal/storage"
 )
 
 // Setup contains application metadata
@@ -19,8 +21,8 @@ type Setup struct {
 
 // Server is the server of our application.
 type Server struct {
-	logger *slog.Logger
-	// store      *stores.Store
+	logger     *slog.Logger
+	store      storage.Repository
 	router     *api.Router
 	config     config.Application
 	version    string
@@ -52,6 +54,12 @@ func (s *Server) Run() error {
 	slog.Info("initializing logger")
 	loggerError := s.initializeLogger()
 	if loggerError != nil {
+		return errStartingApplication
+	}
+
+	slog.Info("initializing storage")
+	storageError := s.initializeStorage()
+	if storageError != nil {
 		return errStartingApplication
 	}
 
@@ -100,8 +108,17 @@ func (s *Server) initializeLogger() error {
 	return nil
 }
 
+func (s *Server) initializeStorage() error {
+	s.store = storage.NewMySQLRepository(s.config)
+	if err := s.store.Connect(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) initializeRouter() {
-	router := api.NewRouter(s.config.ApplicationPort)
+	paymentHandler := handlers.NewPaymentHandler(s.store)
+	router := api.NewRouter(s.config.ApplicationPort, paymentHandler)
 	router.InitializeEndpoints()
 	s.router = router
 }

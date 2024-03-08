@@ -1,8 +1,10 @@
 Table merchants {
   id integer [primary key]
-  name varchar
-  email varchar [not null]
   api_token varchar [not null]
+  name varchar [not null]
+  email varchar [not null]
+  country varchar
+  address varchar
   created_at timestamp
   updated_at timestamp
   deleted_at timestamp

@@ -9,13 +9,15 @@ import (
 )
 
 type Router struct {
-	Server *gin.Engine
-	Port   string
+	Server         *gin.Engine
+	Port           string
+	PaymentHandler *handlers.PaymentHandler
 }
 
-func NewRouter(port string) *Router {
+func NewRouter(port string, paymentHandler *handlers.PaymentHandler) *Router {
 	return &Router{
-		Port: port,
+		Port:           port,
+		PaymentHandler: paymentHandler,
 	}
 }
 
@@ -28,9 +30,9 @@ func (r *Router) InitializeEndpoints() {
 		})
 	})
 
-	explorer := server.Group("/payment")
+	explorer := server.Group("/merchants")
 	{
-		explorer.POST("/process", handlers.ProcessPayment)
+		explorer.POST("/payment/process", r.PaymentHandler.ProcessPayment)
 	}
 
 	r.Server = server
