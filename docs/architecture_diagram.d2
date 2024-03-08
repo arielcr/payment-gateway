@@ -1,0 +1,63 @@
+customer: {
+  label: Customer
+  shape: image
+  width: 100
+  height: 100
+  icon: https://icons.terrastruct.com/azure/General%20Service%20Icons/User%20Icon.svg
+  top: 338
+  left: 0
+}
+
+merchant: {
+  label: Merchant
+  shape: image
+  width: 100
+  height: 100
+  icon: https://icons.terrastruct.com/azure/Web%20Service%20Color/App%20Service%20Domains.svg
+}
+
+simulator: {
+  label: Bank Simulator
+  shape: image
+  width: 100
+  height: 100
+  icon: https://icons.terrastruct.com/aws/Internet%20of%20Things/IoT_Bank_light-bg.svg
+}
+
+OPP: {
+  label: Online Payment Platform
+  queue: {
+    label: Queue
+    shape: image
+    width: 100
+    height: 100
+    icon: https://icons.terrastruct.com/aws/Application%20Integration/Amazon-Simple-Queue-Service-SQS_Message_light-bg.svg
+  }
+  database: {
+    label: Database
+    shape: image
+    width: 100
+    height: 100
+    icon: https://icons.terrastruct.com/essentials/117-database.svg
+  }
+  payment: {
+    label: Payment API
+    width: 100
+    height: 100
+    style.3d: true
+    style.shadow: false
+    style.multiple: false
+    style.double-border: false
+    label.near: center-center
+  }
+  payment -> queue
+  queue -> payment
+  payment -> database
+  label.near: top-center
+  style.font-size: 19
+}
+
+customer -> merchant -> OPP
+
+OPP -> simulator
+simulator -> OPP

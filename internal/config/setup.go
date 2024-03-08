@@ -20,10 +20,10 @@ type Application struct {
 // RepositoryParameters contains data related to a repository.
 type RepositoryParameters struct {
 	Host     string `env:"DB_HOST" envDefault:"localhost"`
-	Port     int    `env:"DB_PORT" envDefault:"5432"`
-	User     string `env:"DB_USER" envDefault:"postgres"`
-	Password string `env:"DB_PASSWORD" envDefault:"postgres"`
-	DBName   string `env:"DBNAME" envDefault:"postgres"`
+	Port     int    `env:"DB_PORT" envDefault:"3306"`
+	User     string `env:"DB_USER" envDefault:"user"`
+	Password string `env:"DB_PASSWORD" envDefault:"payments"`
+	DBName   string `env:"DBNAME" envDefault:"payments_db"`
 }
 
 // Load load application configuration

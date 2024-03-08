@@ -1,0 +1,55 @@
+version: '3'
+services:
+  api:
+    build: .
+    container_name: payment-gateway
+    depends_on:
+      - database
+    ports:
+      - '8080:8080'
+    environment:
+      - 'APPLICATION_PORT=:8080'
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=mysql
+      - DB_PASSWORD=mysql
+      - DBNAME=mysql
+      - SCHEMA=public
+    networks:
+      - mynet
+
+  database:
+    image: 'mysql:latest'
+    container_name: db-mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_USER: user
+      MYSQL_DATABASE: payments_db
+      MYSQL_PASSWORD: payments
+      MYSQL_ROOT_PASSWORD: payments
+    volumes:
+      - mydb:/var/lib/mysql
+    networks:
+      mynet:
+        aliases:
+          - dbnet
+
+  migrate:
+    image: migrate/migrate
+    networks:
+      - mynet
+    volumes:
+      - ./internal/storage/migrations:/migrations  
+    command: ["-path", "migrations", "-database",  "mysql://user:payments@tcp(dbnet:3306)/payments_db", "up"]
+    links: 
+      - database
+    depends_on:
+      - database
+
+networks:
+  mynet:
+    driver: bridge
+
+volumes:
+  mydb:

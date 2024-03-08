@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/arielcr/payment-gateway/internal/api/handlers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,15 +28,10 @@ func (r *Router) InitializeEndpoints() {
 		})
 	})
 
-	// explorer := server.Group("/explorers")
-	// {
-	// 	explorer.GET("", controller.ListExplorers)
-	// 	explorer.GET(":explorerID", controller.FetchExplorer)
-	// 	explorer.POST("", controller.CreateExplorer)
-	// 	explorer.POST("/import", controller.ImportCSV)
-	// 	explorer.PUT("/:explorerID", controller.UpdateExplorer)
-	// 	explorer.DELETE("/:explorerID", controller.DeleteExplorer)
-	// }
+	explorer := server.Group("/payment")
+	{
+		explorer.POST("/process", handlers.ProcessPayment)
+	}
 
 	r.Server = server
 }

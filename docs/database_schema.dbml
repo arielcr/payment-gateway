@@ -1,0 +1,50 @@
+Table merchants {
+  id integer [primary key]
+  name varchar
+  email varchar [not null]
+  api_token varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table customers {
+  id integer [primary key]
+  name varchar [not null]
+  email varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table payments {
+  id integer [primary key]
+  order_token varchar [not null]
+  customer_id integer [not null]
+  merchant_id integer [not null]
+  amount decimal [not null]
+  status enum [not null]
+  created_at timestamp
+}
+
+Table refunds {
+  id integer [primary key]
+  payment_id integer [not null]
+  amount decimal [not null]
+  status enum [not null]
+  created_at timestamp
+}
+
+Table credit_cards {
+  id integer [primary key]
+  token varchar [not null]
+  expiration_date varchar
+  card_type varchar [not null]
+  customer_id integer [not null]
+  created_at timestamp
+}
+
+Ref: payments.customer_id > customers.id
+Ref: payments.merchant_id > merchants.id
+Ref: refunds.payment_id - payments.id
+Ref: credit_cards.customer_id > customers.id
