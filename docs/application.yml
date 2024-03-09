@@ -11,7 +11,7 @@ paths:
   /merchants/payment/process:
     post:
       tags:
-        - Payments
+        - Payments API
       summary: Process a Payment
       requestBody:
         required: true
@@ -43,7 +43,7 @@ paths:
   /merchants/payment/{id}/refund:
     post:
       tags:
-        - Payments
+        - Payments API
       summary: Process a refund for a payment
       parameters:
         - in: path
@@ -73,9 +73,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentNotFoundErrorResponse'
 
+  /payments/{id}:
     get: 
       tags:
-        - Payments
+        - Payments API
       summary: Retrieve payment details by ID
       parameters:
         - in: path
@@ -99,8 +100,96 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaymentNotFoundErrorResponse'
 
+  /payment/process:
+    post:
+      tags:
+        - Bank Simulator
+      summary: Process a Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentProcessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentProcessResponse'
+  /payment/refund:
+    post:
+      tags:
+        - Bank Simulator
+      summary: Process a refund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
 components:
   schemas:
+    BankRefundRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 70
+        reason:
+          type: string
+          example: "Changed"
+    BankRefundResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Refund succeeded"
+        processor:
+          type: string
+          example: "Awesome Bank"
+    PaymentProcessRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 70.25
+        card_number:
+          type: string
+          example: "4111111111111111"
+        expiry_month:
+          type: string
+          example: "05"
+        expiry_year:
+          type: string
+          example: "2025"
+        cvv:
+          type: string
+          example: "3214"
+
+    PaymentProcessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Payment failed"
+        processor:
+          type: string
+          example: "Awesome Bank"
     RefundRequest:
       type: object
       properties:
@@ -144,7 +233,7 @@ components:
       properties:
         order_token:
           type: string
-          example: "jdhfksjdf79fihu4ohfoudsh"
+          example: "vrE50xZfA5cbXeKiQFFHM0twjcex2hxaw2GEpREvso34S46"
         amount:
           type: number
           example: 77
@@ -249,7 +338,7 @@ components:
           example: 2
         order_token:
           type: string
-          example: "jdhfksjdf79fihu4ohfoudsh"
+          example: "vrE50xZfA5cbXeKiQFFHM0twjcex2hxaw2GEpREvso34S46"
         status:
           type: string
           example: "failed"
