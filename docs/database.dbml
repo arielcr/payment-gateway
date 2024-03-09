@@ -5,6 +5,7 @@ Table merchants {
   email varchar [not null]
   country varchar
   address varchar
+  phone_number varchar
   created_at timestamp
   updated_at timestamp
   deleted_at timestamp
@@ -27,23 +28,33 @@ Table payments {
   amount decimal [not null]
   status enum [not null]
   created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
 }
 
 Table refunds {
   id integer [primary key]
   payment_id integer [not null]
   amount decimal [not null]
-  status enum [not null]
+  reason varchar 
   created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
 }
 
 Table credit_cards {
   id integer [primary key]
   token varchar [not null]
-  expiration_date varchar
+  expiration_month varchar
+  expiration_year varchar
+  card_holder varchar
+  last_four varchar
   card_type varchar [not null]
+  card_brand varchar
   customer_id integer [not null]
   created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
 }
 
 Ref: payments.customer_id > customers.id

@@ -1,0 +1,307 @@
+openapi: 3.0.0
+info:
+  title: DEUNA Payment Processing API
+  description:  Enable e-commerce businesses to securely and seamlessly process transactions.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: 'Payment API'
+
+paths:
+  /merchants/payment/process:
+    post:
+      tags:
+        - Payments
+      summary: Process a Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerNotFoundErrorResponse'
+
+        '400':
+          description: Invalid Credit Card Number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidCreditCardErrorResponse'
+
+  /merchants/payment/{id}/refund:
+    post:
+      tags:
+        - Payments
+      summary: Process a refund for a payment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: The ID of the payment to refund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentNotFoundErrorResponse'
+
+    get: 
+      tags:
+        - Payments
+      summary: Retrieve payment details by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: The ID of the payment to retrieve
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentDetailsResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentNotFoundErrorResponse'
+
+components:
+  schemas:
+    RefundRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 50
+        reason:
+          type: string
+          example: "It is in bad conditions"
+
+    RefundResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "refunded"
+
+    PaymentNotFoundErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "payment not found"
+
+    CustomerNotFoundErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "customer not found"
+
+    InvalidCreditCardErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "invalid credit card number"
+
+    PaymentDetailsResponse:
+      type: object
+      properties:
+        order_token:
+          type: string
+          example: "jdhfksjdf79fihu4ohfoudsh"
+        amount:
+          type: number
+          example: 77
+        status:
+          type: string
+          example: "refunded"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-03-09T17:03:20Z"
+        customer:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Ariel Orozco"
+            email:
+              type: string
+              example: "arielorozco@gmail.com"
+        merchant:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Awesome Merchant"
+            email:
+              type: string
+              example: "awesome@merchant.com"
+
+    PaymentRequest:
+      type: object
+      properties:
+        order_token:
+          type: string
+          example: "vrE50xZfA5cbXeKiQFFHM0twjcex2hxaw2GEpREvso34S46"
+        payment_source:
+          type: object
+          properties:
+            method_type:
+              type: string
+              example: "credit card"
+            processor:
+              type: string
+              example: "my bank"
+            card_info:
+              type: object
+              properties:
+                card_type:
+                  type: string
+                  example: "debit card"
+                expiration_month:
+                  type: string
+                  example: "05"
+                expiration_year:
+                  type: string
+                  example: "2025"
+                card_number:
+                  type: string
+                  example: "4111111111111111"
+                card_holder:
+                  type: string
+                  example: "Ariel Orozco"
+                card_cvv:
+                  type: string
+                  example: "3214"
+        customer:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Ariel Orozco"
+            email:
+              type: string
+              example: "arielorozco@gmail.com"
+        callback_urls:
+          type: object
+          properties:
+            success:
+              type: string
+              example: "http://success.com"
+            reject:
+              type: string
+              example: "http://reject.com"
+            cancelled:
+              type: string
+              example: "http://cancelled.com"
+            failed:
+              type: string
+              example: "http://failed.com"
+        amount:
+          type: number
+          example: 77
+        merchand_id:
+          type: integer
+          example: 1
+
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        order_token:
+          type: string
+          example: "jdhfksjdf79fihu4ohfoudsh"
+        status:
+          type: string
+          example: "failed"
+        payment_info:
+          type: object
+          properties:
+            amount:
+              type: number
+              example: 77
+            method_type:
+              type: string
+              example: "credit card"
+            card_details:
+              type: object
+              properties:
+                card_type:
+                  type: string
+                  example: "debit card"
+                card_brand:
+                  type: string
+                  example: "Visa"
+                card_holder:
+                  type: string
+                  example: "Ariel Orozco"
+                last_four_digits:
+                  type: string
+                  example: "1111"
+            processor:
+              type: string
+              example: "Awesome Bank"
+        redirect_url:
+          type: string
+          example: "http://failed.com"
+        merchant:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Awesome Merchant"
+            email:
+              type: string
+              example: "awesome@merchant.com"
+        customer:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Ariel Orozco"
+            email:
+              type: string
+              example: "arielorozco@gmail.com"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-03-09T18:53:14.97Z"
