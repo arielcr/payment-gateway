@@ -1,7 +1,9 @@
+// Package models provides data models used throughout the application.
 package models
 
 import "time"
 
+// PaymentResponse represents the response after processing a payment.
 type PaymentResponse struct {
 	ID          uint             `json:"id"`
 	OrderToken  string           `json:"order_token"`
@@ -13,6 +15,7 @@ type PaymentResponse struct {
 	CreatedAt   time.Time        `json:"created_at"`
 }
 
+// PaymentInfo represents information about the payment.
 type PaymentInfo struct {
 	Amount      float64     `json:"amount"`
 	MethodType  string      `json:"method_type"`
@@ -20,6 +23,7 @@ type PaymentInfo struct {
 	Processor   string      `json:"processor"`
 }
 
+// CardDetails represents details of a credit/debit card used for payment.
 type CardDetails struct {
 	CardType       string `json:"card_type"`
 	CardBrand      string `json:"card_brand"`
@@ -27,6 +31,7 @@ type CardDetails struct {
 	LastFourDigits string `json:"last_four_digits"`
 }
 
+// RefundResponse represents the response after processing a refund.
 type RefundResponse struct {
 	Status string `json:"status"`
 }

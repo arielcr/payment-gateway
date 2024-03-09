@@ -1,3 +1,4 @@
+// Package models provides data models used throughout the application.
 package models
 
 import (
@@ -7,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// PaymentStatus represents the status of a payment.
 type PaymentStatus int
 
 const (
@@ -19,8 +21,9 @@ const (
 	Authorized
 )
 
+// Payment represents a payment entity stored in the database.
 type Payment struct {
-	gorm.Model
+	gorm.Model               // Embedded gorm.Model for ID, created_at, updated_at, deleted_at fields.
 	OrderToken string        `gorm:"not null" json:"order_token" validate:"required"`
 	CustomerID uint          `gorm:"not null" json:"customer_id"`
 	MerchantID uint          `gorm:"not null" json:"merchant_id" validate:"required"`
@@ -28,6 +31,7 @@ type Payment struct {
 	Status     PaymentStatus `gorm:"not null" json:"status" validate:"required"`
 }
 
+// PaymentData represents data for a payment used in responses.
 type PaymentData struct {
 	OrderToken string           `json:"order_token"`
 	Amount     float64          `json:"amount"`
@@ -37,6 +41,7 @@ type PaymentData struct {
 	Merchant   MerchantResponse `json:"merchant"`
 }
 
+// String converts a PaymentStatus to its string representation.
 func (s PaymentStatus) String() string {
 	switch s {
 	case Pending:
@@ -58,10 +63,12 @@ func (s PaymentStatus) String() string {
 	}
 }
 
+// MarshalJSON marshals a PaymentStatus to JSON.
 func (s PaymentStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, s.String())), nil
 }
 
+// Scan scans a value into a PaymentStatus.
 func (ps *PaymentStatus) Scan(value interface{}) error {
 	switch v := value.(type) {
 	case []byte:
@@ -72,6 +79,7 @@ func (ps *PaymentStatus) Scan(value interface{}) error {
 	}
 }
 
+// ConvertStringToPaymentStatus converts a string to a PaymentStatus.
 func (ps *PaymentStatus) ConvertStringToPaymentStatus(status string) PaymentStatus {
 	switch status {
 	case "pending":

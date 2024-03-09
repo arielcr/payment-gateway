@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for processing payment and refund requests.
 package handlers
 
 import (
@@ -11,11 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// PaymentHandler handles HTTP requests related to processing payments.
 type PaymentHandler struct {
 	store  storage.Repository
 	config config.Application
 }
 
+// NewPaymentHandler creates a new instance of PaymentHandler with the provided store and config.
 func NewPaymentHandler(store storage.Repository, config config.Application) *PaymentHandler {
 	return &PaymentHandler{
 		store:  store,
@@ -23,6 +26,8 @@ func NewPaymentHandler(store storage.Repository, config config.Application) *Pay
 	}
 }
 
+// ProcessPayment handles the HTTP POST request to process a payment.
+// It decodes the request body, validates and processes the payment, and sends back a response.
 func (p *PaymentHandler) ProcessPayment(context *gin.Context) {
 	paymentRequest := models.PaymentRequest{}
 	if err := context.BindJSON(&paymentRequest); err != nil {
@@ -65,6 +70,8 @@ func (p *PaymentHandler) ProcessPayment(context *gin.Context) {
 	context.JSON(http.StatusCreated, &paymentResponse)
 }
 
+// GetPayment handles the HTTP GET request to retrieve payment information by ID.
+// It fetches the payment data from the database and sends back a response.
 func (p *PaymentHandler) GetPayment(context *gin.Context) {
 	paymentID := context.Param("paymentID")
 
@@ -77,6 +84,8 @@ func (p *PaymentHandler) GetPayment(context *gin.Context) {
 	context.JSON(http.StatusOK, &paymentData)
 }
 
+// sendTransactionRequest sends a transaction request to the acquiring bank for processing payment.
+// It constructs the request using the payment information and application configuration.
 func (p *PaymentHandler) sendTransactionRequest(paymentRequest models.PaymentRequest) (bank.PaymentResponse, error) {
 	request := bank.PaymentRequest{
 		Amount:      paymentRequest.Amount,
@@ -93,6 +102,7 @@ func (p *PaymentHandler) sendTransactionRequest(paymentRequest models.PaymentReq
 	return response, nil
 }
 
+// getMerchantInfo retrieves merchant information from the database by ID.
 func (p *PaymentHandler) getMerchantInfo(id uint) (models.Merchant, error) {
 	merchant, err := p.store.GetMerchant(id)
 	if err != nil {
@@ -101,6 +111,7 @@ func (p *PaymentHandler) getMerchantInfo(id uint) (models.Merchant, error) {
 	return merchant, nil
 }
 
+// getCustomerInfo retrieves or creates customer information based on the provided details.
 func (p *PaymentHandler) getCustomerInfo(c models.Customer) (models.Customer, error) {
 	customer := models.Customer{
 		Name:  c.Name,
@@ -122,6 +133,7 @@ func (p *PaymentHandler) getCustomerInfo(c models.Customer) (models.Customer, er
 	return customer, nil
 }
 
+// createPayment creates a payment record in the database based on the payment request and transaction result.
 func (p *PaymentHandler) createPayment(paymentRequest models.PaymentRequest, transactionResult bank.PaymentResponse, customerID uint) (models.Payment, error) {
 	var status models.PaymentStatus
 	if transactionResult.Success {
@@ -144,6 +156,7 @@ func (p *PaymentHandler) createPayment(paymentRequest models.PaymentRequest, tra
 	return payment, nil
 }
 
+// createCreditCard creates a credit card record in the database based on the provided card information and customer ID.
 func (p *PaymentHandler) createCreditCard(cardInfo models.CardInfo, customerID uint) (models.CreditCard, error) {
 	err := utils.ValidateCreditCard(cardInfo.CardNumber)
 	if err != nil {
@@ -178,6 +191,7 @@ func (p *PaymentHandler) createCreditCard(cardInfo models.CardInfo, customerID u
 	return creditCard, nil
 }
 
+// generateResponse generates a payment response based on the payment, payment request, merchant, customer, credit card, and transaction result.
 func (p *PaymentHandler) generateResponse(
 	payment models.Payment,
 	paymentRequest models.PaymentRequest,
@@ -216,6 +230,7 @@ func (p *PaymentHandler) generateResponse(
 	return paymentResponse
 }
 
+// getRedirectUrl determines the redirect URL based on the payment status and callback URLs in the payment request.
 func (p *PaymentHandler) getRedirectUrl(paymentRequest models.PaymentRequest, status models.PaymentStatus) string {
 	var redirectUrl string
 	switch status {

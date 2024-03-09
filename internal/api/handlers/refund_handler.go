@@ -1,3 +1,4 @@
+// Package handlers provides HTTP handlers for processing refund requests.
 package handlers
 
 import (
@@ -12,11 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RefundHandler handles HTTP requests related to processing refunds.
 type RefundHandler struct {
 	store  storage.Repository
 	config config.Application
 }
 
+// NewRefundHandler creates a new instance of RefundHandler with the provided store and config.
 func NewRefundHandler(store storage.Repository, config config.Application) *RefundHandler {
 	return &RefundHandler{
 		store:  store,
@@ -24,6 +27,8 @@ func NewRefundHandler(store storage.Repository, config config.Application) *Refu
 	}
 }
 
+// RefundPayment handles the HTTP POST request to process a refund for a payment.
+// It decodes the request body, sends a refund request to the acquiring bank, and updates the payment status.
 func (p *RefundHandler) RefundPayment(context *gin.Context) {
 	var status models.PaymentStatus
 	paymentID := context.Param("paymentID")
@@ -52,6 +57,7 @@ func (p *RefundHandler) RefundPayment(context *gin.Context) {
 	context.JSON(http.StatusOK, &models.RefundResponse{Status: "refunded"})
 }
 
+// createRefund creates a refund record in the database and updates the payment status based on the refund request.
 func (p *RefundHandler) createRefund(refundRequest models.RefundRequest, paymentID string, status models.PaymentStatus) (models.Refund, error) {
 	id, err := strconv.Atoi(paymentID)
 	if err != nil {
@@ -74,6 +80,8 @@ func (p *RefundHandler) createRefund(refundRequest models.RefundRequest, payment
 	return refund, nil
 }
 
+// sendRefundRequest sends a refund request to the acquiring bank for processing refund.
+// It constructs the request using the refund information and application configuration.
 func (p *RefundHandler) sendRefundRequest(refundRequest models.RefundRequest) (bank.PaymentResponse, error) {
 	request := bank.RefundRequest{
 		Amount: refundRequest.Amount,

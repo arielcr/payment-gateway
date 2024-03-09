@@ -1,3 +1,5 @@
+// Package main provides functionality for simulating a bank service.
+// It includes HTTP handlers for processing payment and refund requests.
 package main
 
 import (
@@ -8,6 +10,7 @@ import (
 	"net/http"
 )
 
+// PaymentRequest represents a request to process a payment.
 type PaymentRequest struct {
 	Amount      float64 `json:"amount"`
 	CardNumber  string  `json:"card_number"`
@@ -16,17 +19,21 @@ type PaymentRequest struct {
 	CVV         string  `json:"cvv"`
 }
 
+// RefundRequest represents a request to process a refund.
 type RefundRequest struct {
 	Amount float64 `json:"amount"`
 	Reason string  `json:"reason"`
 }
 
+// PaymentResponse represents the response from a payment or refund request.
 type PaymentResponse struct {
 	Success   bool   `json:"success"`
 	Message   string `json:"message"`
 	Processor string `json:"processor"`
 }
 
+// handlePaymentRequest handles HTTP requests to process payments.
+// It decodes the request body, processes the payment, and sends back a response.
 func handlePaymentRequest(w http.ResponseWriter, r *http.Request) {
 	var paymentRequest PaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&paymentRequest); err != nil {
@@ -56,6 +63,8 @@ func handlePaymentRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handleRefundRequest handles HTTP requests to process refunds.
+// It decodes the request body, processes the refund, and sends back a response.
 func handleRefundRequest(w http.ResponseWriter, r *http.Request) {
 	var refundRequest RefundRequest
 	if err := json.NewDecoder(r.Body).Decode(&refundRequest); err != nil {

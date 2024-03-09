@@ -1,11 +1,13 @@
+// Package models provides data models used throughout the application.
 package models
 
 import (
 	"gorm.io/gorm"
 )
 
+// CreditCard represents a credit card entity stored in the database.
 type CreditCard struct {
-	gorm.Model
+	gorm.Model             // Embedded gorm.Model for ID, created_at, updated_at, deleted_at fields.
 	Token           string `gorm:"not null" json:"token" validate:"required"`
 	ExpirationMonth string `gorm:"not null" json:"expiration_date" validate:"required"`
 	ExpirationYear  string `gorm:"not null" json:"expiration_year" validate:"required"`

@@ -1,3 +1,5 @@
+// Package main serves as the entry point for the payment gateway application.
+// It initializes the application server with version information and starts the application.
 package main
 
 import (
@@ -7,12 +9,15 @@ import (
 	"github.com/arielcr/payment-gateway/internal/application"
 )
 
+// Version contains the version number of the application.
 var (
 	Version    string
 	BuildDate  string
 	CommitHash string
 )
 
+// main is the entry point of the application.
+// It initializes the application server, starts it, and handles any errors that occur during startup.
 func main() {
 	slog.Info("starting application")
 
@@ -26,6 +31,7 @@ func main() {
 	slog.Info("finishing application")
 }
 
+// newApplicationServer creates a new instance of the application server with the provided version information.
 func newApplicationServer() *application.Server {
 	settings := application.Setup{
 		Version:    Version,

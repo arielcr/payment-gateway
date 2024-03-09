@@ -1,3 +1,5 @@
+// Package application provides functionality for managing the application lifecycle, including server setup and initialization.
+// It includes methods for starting the server, loading configuration, initializing logger, storage, and router.
 package application
 
 import (
@@ -34,6 +36,7 @@ var (
 	errStartingApplication = errors.New("unable to start application")
 )
 
+// NewServer creates a new instance of Server using the provided setup settings.
 func NewServer(settings Setup) *Server {
 	newServer := Server{
 		version:    settings.Version,
@@ -44,6 +47,9 @@ func NewServer(settings Setup) *Server {
 	return &newServer
 }
 
+// Run starts the server by performing initialization steps such as loading configuration,
+// initializing logger, storage, and router, and then starting the router to listen for incoming requests.
+// It returns an error if any initialization step fails.
 func (s *Server) Run() error {
 	slog.Info("loading configuration")
 	confError := s.loadConfiguration()
@@ -70,6 +76,8 @@ func (s *Server) Run() error {
 	return nil
 }
 
+// loadConfiguration loads the application configuration using the config package.
+// It returns an error if the configuration cannot be loaded.
 func (s *Server) loadConfiguration() error {
 	applicationConfig, err := config.Load()
 	if err != nil {
@@ -81,6 +89,9 @@ func (s *Server) loadConfiguration() error {
 	return nil
 }
 
+// initializeLogger initializes the logger based on the configuration settings.
+// It sets the log level and creates a logger instance using the slog package.
+// Returns an error if logger initialization fails.
 func (s *Server) initializeLogger() error {
 	logLevel := slog.LevelDebug
 
@@ -108,6 +119,9 @@ func (s *Server) initializeLogger() error {
 	return nil
 }
 
+// initializeStorage initializes the database connection and creates a storage instance.
+// It uses the storage package to connect to MySQL and create a MySQLRepository.
+// Returns an error if storage initialization fails.
 func (s *Server) initializeStorage() error {
 	db, err := storage.ConnectMySQL(s.config.Repository)
 	if err != nil {
@@ -117,6 +131,8 @@ func (s *Server) initializeStorage() error {
 	return nil
 }
 
+// initializeRouter initializes the router with payment and refund handlers,
+// configures the endpoints, and assigns the router to the server.
 func (s *Server) initializeRouter() {
 	paymentHandler := handlers.NewPaymentHandler(s.store, s.config)
 	refundHandler := handlers.NewRefundHandler(s.store, s.config)

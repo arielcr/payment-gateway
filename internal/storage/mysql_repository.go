@@ -1,3 +1,4 @@
+// Package storage provides interfaces and implementations for interacting with different data storage systems.
 package storage
 
 import (
@@ -11,6 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Define custom error messages
 var (
 	errMerchantNotFound = errors.New("merchant not found")
 	errCustomerNotFound = errors.New("customer not found")
@@ -18,16 +20,19 @@ var (
 	errInvalidPaymentId = errors.New("invalid payment id")
 )
 
+// MySQLRepository represents a MySQL implementation of the Repository interface.
 type MySQLRepository struct {
 	db *gorm.DB
 }
 
+// NewMySQLRepository creates a new instance of MySQLRepository.
 func NewMySQLRepository(db *gorm.DB) *MySQLRepository {
 	return &MySQLRepository{
 		db: db,
 	}
 }
 
+// ConnectMySQL connects to MySQL database using the provided configuration parameters.
 func ConnectMySQL(config config.RepositoryParameters) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&loc=Local",
 		config.User,
@@ -44,6 +49,7 @@ func ConnectMySQL(config config.RepositoryParameters) (*gorm.DB, error) {
 	return conn, nil
 }
 
+// CreatePayment creates a new payment record in the database.
 func (m *MySQLRepository) CreatePayment(payment *models.Payment) error {
 	if result := m.db.Create(&payment); result.Error != nil {
 		return result.Error
@@ -51,6 +57,7 @@ func (m *MySQLRepository) CreatePayment(payment *models.Payment) error {
 	return nil
 }
 
+// UpdatePaymentStatus updates the status of a payment in the database.
 func (m *MySQLRepository) UpdatePaymentStatus(paymentID uint, status models.PaymentStatus) error {
 	var payment models.Payment
 	if err := m.db.First(&payment, paymentID); err.Error != nil {
@@ -65,6 +72,7 @@ func (m *MySQLRepository) UpdatePaymentStatus(paymentID uint, status models.Paym
 	return nil
 }
 
+// CreateRefund creates a new refund record in the database.
 func (m *MySQLRepository) CreateRefund(refund *models.Refund) error {
 	var payment models.Payment
 	if err := m.db.First(&payment, refund.PaymentID); err.Error != nil {
@@ -82,6 +90,7 @@ func (m *MySQLRepository) CreateRefund(refund *models.Refund) error {
 	return nil
 }
 
+// CreateCustomer creates a new customer record in the database.
 func (m *MySQLRepository) CreateCustomer(customer *models.Customer) error {
 	if result := m.db.Create(&customer); result.Error != nil {
 		return result.Error
@@ -89,6 +98,7 @@ func (m *MySQLRepository) CreateCustomer(customer *models.Customer) error {
 	return nil
 }
 
+// GetMerchant retrieves a merchant record from the database by ID.
 func (m *MySQLRepository) GetMerchant(merchantID uint) (models.Merchant, error) {
 	var merchant models.Merchant
 	if result := m.db.First(&merchant, merchantID); result.Error != nil {
@@ -97,6 +107,7 @@ func (m *MySQLRepository) GetMerchant(merchantID uint) (models.Merchant, error) 
 	return merchant, nil
 }
 
+// GetCustomer retrieves a customer record from the database by ID.
 func (m *MySQLRepository) GetCustomer(customerID uint) (models.Customer, error) {
 	var customer models.Customer
 	if result := m.db.First(&customer, customerID); result.Error != nil {
@@ -105,6 +116,7 @@ func (m *MySQLRepository) GetCustomer(customerID uint) (models.Customer, error) 
 	return customer, nil
 }
 
+// GetPayment retrieves a payment record from the database by ID.
 func (m *MySQLRepository) GetPayment(paymentID string) (models.PaymentData, error) {
 	var payment models.Payment
 
@@ -145,6 +157,7 @@ func (m *MySQLRepository) GetPayment(paymentID string) (models.PaymentData, erro
 	return paymentData, nil
 }
 
+// CreateCreditCard creates a new credit card record in the database.
 func (m *MySQLRepository) CreateCreditCard(creditCard *models.CreditCard) error {
 	if result := m.db.Create(&creditCard); result.Error != nil {
 		return result.Error
