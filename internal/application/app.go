@@ -109,15 +109,16 @@ func (s *Server) initializeLogger() error {
 }
 
 func (s *Server) initializeStorage() error {
-	s.store = storage.NewMySQLRepository(s.config)
-	if err := s.store.Connect(); err != nil {
+	db, err := storage.ConnectMySQL(s.config.Repository)
+	if err != nil {
 		return err
 	}
+	s.store = storage.NewMySQLRepository(db)
 	return nil
 }
 
 func (s *Server) initializeRouter() {
-	paymentHandler := handlers.NewPaymentHandler(s.store)
+	paymentHandler := handlers.NewPaymentHandler(s.store, s.config)
 	router := api.NewRouter(s.config.ApplicationPort, paymentHandler)
 	router.InitializeEndpoints()
 	s.router = router

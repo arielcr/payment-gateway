@@ -1,0 +1,2 @@
+INSERT INTO `merchants` ( `api_token`, `name`, `email`, `country`, `address`, `phone_number`, `created_at`, `updated_at` ) VALUES ('vrE50xZfA5cbXeKiQFFHM0twjcex2hxaw2GEpREvso34S46Bd5doVDTbKQZN0iUq
+', 'Awesome Merchant', 'awesome@merchant.com', 'USA', 'Miami, Florida', '321545487',NOW(), NOW());

@@ -11,10 +11,11 @@ const (
 
 // Application contains data related to application configuration parameters.
 type Application struct {
-	DryRun          bool   `env:"DRY_RUN" envDefault:"false"`
-	ApplicationPort string `env:"APPLICATION_PORT" envDefault:":8080"`
-	LogLevel        string `env:"LOG_ENVIRONMENT" envDefault:"development"`
-	Repository      RepositoryParameters
+	DryRun            bool   `env:"DRY_RUN" envDefault:"false"`
+	ApplicationPort   string `env:"APPLICATION_PORT" envDefault:":8080"`
+	BankSimulatorHost string `env:"BANK_SIMULATOR_HOST" envDefault:"http://bank-simulator:8090/process_payment"`
+	LogLevel          string `env:"LOG_ENVIRONMENT" envDefault:"development"`
+	Repository        RepositoryParameters
 }
 
 // RepositoryParameters contains data related to a repository.

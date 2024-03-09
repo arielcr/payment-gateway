@@ -9,3 +9,8 @@ type Customer struct {
 	Name  string `gorm:"not null" json:"name" validate:"required"`
 	Email string `gorm:"not null" json:"email" validate:"required"`
 }
+
+type CustomerResponse struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}

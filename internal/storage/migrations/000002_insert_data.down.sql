@@ -1,0 +1,1 @@
+DELETE FROM `merchants` WHERE `id` = 1;

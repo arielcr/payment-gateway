@@ -30,9 +30,14 @@ func (r *Router) InitializeEndpoints() {
 		})
 	})
 
-	explorer := server.Group("/merchants")
+	merchants := server.Group("/merchants")
 	{
-		explorer.POST("/payment/process", r.PaymentHandler.ProcessPayment)
+		merchants.POST("/payment/process", r.PaymentHandler.ProcessPayment)
+	}
+
+	payments := server.Group("/payments")
+	{
+		payments.GET("/:paymentID", r.PaymentHandler.GetPayment)
 	}
 
 	r.Server = server

@@ -3,7 +3,7 @@ IMAGE?=gateway:$(APP_VERSION)
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
-SRC_FOLDER=cmd/gateway
+SRC_FOLDER=cmd/payment_gateway
 BINARY_NAME=gateway
 BINARY_UNIX=$(BINARY_NAME)-amd64-linux
 BINARY_DARWIN=$(BINARY_NAME)-amd64-darwin
@@ -28,9 +28,14 @@ build-linux: ## Build binary for Linux
 	@mkdir -p bin
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GOBUILD} -ldflags ${LDFLAGS} -o bin/${BINARY_UNIX} ./${SRC_FOLDER}/main.go
 
+.PHONY: build-linux-simulator
+build-linux-simulator: ## Build binary for Linux
+	@mkdir -p bin
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GOBUILD} -ldflags ${LDFLAGS} -o bin/bank_simulator-amd64-linux ./cmd/bank_simulator/main.go
+
 .PHONY: run-app
 run-app: ## run app
-	go run cmd/gateway/main.go
+	go run cmd/payment_gateway/main.go
 
 .PHONY: run-migrations
 run-migrations: ## run migrations
@@ -38,9 +43,9 @@ run-migrations: ## run migrations
 
 .PHONY: build-app
 build-app: ## build app
-	docker-compose up -d api database --build
+	docker-compose up -d api database bank-simulator --build
 	@echo "Waiting for the database to become available ..."
-	sleep 10
+	sleep 25
 
 .PHONY: run-local
 run-local: build-app run-migrations

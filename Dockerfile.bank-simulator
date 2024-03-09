@@ -1,0 +1,19 @@
+# Use a lightweight base image
+FROM golang:1.22.0 AS builder
+
+ENV GOPATH /opt/go
+
+RUN mkdir -p /bank_simulator
+WORKDIR /bank_simulator
+COPY . /bank_simulator
+RUN go mod tidy && make build-linux-simulator
+
+FROM alpine:3.19
+
+COPY --from=builder /bank_simulator/bin/bank_simulator-amd64-linux /bin/bank-simulator
+
+RUN ls /bin/bank-simulator
+
+WORKDIR /bin
+
+ENTRYPOINT [ "./bank-simulator" ]
