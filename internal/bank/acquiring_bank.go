@@ -17,6 +17,11 @@ type PaymentRequest struct {
 	Cvv         string  `json:"cvv"`
 }
 
+type RefundRequest struct {
+	Amount float64 `json:"amount"`
+	Reason string  `json:"card_number"`
+}
+
 type PaymentResponse struct {
 	Success   bool   `json:"success"`
 	Message   string `json:"message"`
@@ -40,7 +45,35 @@ func (a *AcquiringBank) ProcessPayment(request PaymentRequest) (PaymentResponse,
 	}
 
 	// Make a POST request to the bank simulator
-	resp, err := http.Post(a.config.BankSimulatorHost, "application/json", bytes.NewBuffer(payloadBytes))
+	resp, err := http.Post(a.config.BankSimulatorHost+"/process", "application/json", bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return PaymentResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return PaymentResponse{}, err
+	}
+
+	// Parse the response JSON into a PaymentResponse struct
+	var response PaymentResponse
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		return PaymentResponse{}, err
+	}
+
+	return response, nil
+}
+
+func (a *AcquiringBank) ProcessRefund(request RefundRequest) (PaymentResponse, error) {
+	payloadBytes, err := json.Marshal(request)
+	if err != nil {
+		return PaymentResponse{}, err
+	}
+
+	// Make a POST request to the bank simulator
+	resp, err := http.Post(a.config.BankSimulatorHost+"/refund", "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return PaymentResponse{}, err
 	}

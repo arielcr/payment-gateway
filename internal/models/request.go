@@ -9,6 +9,11 @@ type PaymentRequest struct {
 	MerchandID    uint          `json:"merchand_id"` // se podria mandar como header
 }
 
+type RefundRequest struct {
+	Amount float64 `json:"amount"`
+	Reason string  `json:"reason"`
+}
+
 type PaymentSource struct {
 	MethodType string   `json:"method_type"`
 	Processor  string   `json:"processor"`

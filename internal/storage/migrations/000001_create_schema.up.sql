@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `refunds` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `payment_id` INT NOT NULL,
   `amount` DECIMAL(10, 2) NOT NULL,
-  `status` ENUM('pending', 'processed', 'failed') NOT NULL DEFAULT 'pending',
+  `reason` VARCHAR(200),
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP,

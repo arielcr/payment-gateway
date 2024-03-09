@@ -12,12 +12,14 @@ type Router struct {
 	Server         *gin.Engine
 	Port           string
 	PaymentHandler *handlers.PaymentHandler
+	RefundHandler  *handlers.RefundHandler
 }
 
-func NewRouter(port string, paymentHandler *handlers.PaymentHandler) *Router {
+func NewRouter(port string, paymentHandler *handlers.PaymentHandler, refundHandler *handlers.RefundHandler) *Router {
 	return &Router{
 		Port:           port,
 		PaymentHandler: paymentHandler,
+		RefundHandler:  refundHandler,
 	}
 }
 
@@ -33,6 +35,7 @@ func (r *Router) InitializeEndpoints() {
 	merchants := server.Group("/merchants")
 	{
 		merchants.POST("/payment/process", r.PaymentHandler.ProcessPayment)
+		merchants.POST("/payment/:paymentID/refund", r.RefundHandler.RefundPayment)
 	}
 
 	payments := server.Group("/payments")

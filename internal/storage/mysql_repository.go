@@ -51,6 +51,37 @@ func (m *MySQLRepository) CreatePayment(payment *models.Payment) error {
 	return nil
 }
 
+func (m *MySQLRepository) UpdatePaymentStatus(paymentID uint, status models.PaymentStatus) error {
+	var payment models.Payment
+	if err := m.db.First(&payment, paymentID); err.Error != nil {
+		return errPaymentNotFound
+	}
+
+	payment.Status = status
+	if err := m.db.Save(&payment); err.Error != nil {
+		return err.Error
+	}
+
+	return nil
+}
+
+func (m *MySQLRepository) CreateRefund(refund *models.Refund) error {
+	var payment models.Payment
+	if err := m.db.First(&payment, refund.PaymentID); err.Error != nil {
+		return errPaymentNotFound
+	}
+
+	// if the refund amount equals zero, then it is a full refund
+	if refund.Amount == 0.00 {
+		refund.Amount = payment.Amount
+	}
+
+	if result := m.db.Create(&refund); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (m *MySQLRepository) CreateCustomer(customer *models.Customer) error {
 	if result := m.db.Create(&customer); result.Error != nil {
 		return result.Error

@@ -26,3 +26,7 @@ type CardDetails struct {
 	CardHolder     string `json:"card_holder"`
 	LastFourDigits string `json:"last_four_digits"`
 }
+
+type RefundResponse struct {
+	Status string `json:"status"`
+}
