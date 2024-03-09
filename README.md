@@ -20,7 +20,7 @@ $ make run-local
 - The Bank Simulator will be available on http://localhost:8090/
 
 ## API Documentation
-You can access the Swagger documentation for this application [docs/application.yml](docs/application.yml).
+You can access the Swagger documentation for this application in [docs/application.yml](docs/application.yml).
 
 ## Database Diagram
 ![Database Diagram](docs/database_diagram.png)
