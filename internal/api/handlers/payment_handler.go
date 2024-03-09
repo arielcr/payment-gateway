@@ -2,6 +2,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/arielcr/payment-gateway/internal/bank"
@@ -16,51 +17,61 @@ import (
 type PaymentHandler struct {
 	store  storage.Repository
 	config config.Application
+	logger *slog.Logger
 }
 
 // NewPaymentHandler creates a new instance of PaymentHandler with the provided store and config.
-func NewPaymentHandler(store storage.Repository, config config.Application) *PaymentHandler {
+func NewPaymentHandler(store storage.Repository, config config.Application, logger *slog.Logger) *PaymentHandler {
 	return &PaymentHandler{
 		store:  store,
 		config: config,
+		logger: logger,
 	}
 }
 
 // ProcessPayment handles the HTTP POST request to process a payment.
 // It decodes the request body, validates and processes the payment, and sends back a response.
 func (p *PaymentHandler) ProcessPayment(context *gin.Context) {
+	p.logger.Info("Proccesing payment")
+
 	paymentRequest := models.PaymentRequest{}
 	if err := context.BindJSON(&paymentRequest); err != nil {
+		p.logger.Error(err.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	merchant, err := p.getMerchantInfo(paymentRequest.MerchandID)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	customer, err := p.getCustomerInfo(paymentRequest.Customer)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
 	creditCard, err := p.createCreditCard(paymentRequest.PaymentSource.CardInfo, customer.ID)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	transactionResult, err := p.sendTransactionRequest(paymentRequest)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	payment, err := p.createPayment(paymentRequest, transactionResult, customer.ID)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error})
 		return
 	}
@@ -73,10 +84,13 @@ func (p *PaymentHandler) ProcessPayment(context *gin.Context) {
 // GetPayment handles the HTTP GET request to retrieve payment information by ID.
 // It fetches the payment data from the database and sends back a response.
 func (p *PaymentHandler) GetPayment(context *gin.Context) {
+	p.logger.Info("Getting payment")
+
 	paymentID := context.Param("paymentID")
 
 	paymentData, err := p.store.GetPayment(paymentID)
 	if err != nil {
+		p.logger.Error(err.Error())
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
@@ -87,6 +101,8 @@ func (p *PaymentHandler) GetPayment(context *gin.Context) {
 // sendTransactionRequest sends a transaction request to the acquiring bank for processing payment.
 // It constructs the request using the payment information and application configuration.
 func (p *PaymentHandler) sendTransactionRequest(paymentRequest models.PaymentRequest) (bank.PaymentResponse, error) {
+	p.logger.Info("Sending transaction request")
+
 	request := bank.PaymentRequest{
 		Amount:      paymentRequest.Amount,
 		CardNumber:  paymentRequest.PaymentSource.CardInfo.CardNumber,
@@ -94,9 +110,10 @@ func (p *PaymentHandler) sendTransactionRequest(paymentRequest models.PaymentReq
 		ExpiryYear:  paymentRequest.PaymentSource.CardInfo.ExpirationYear,
 		Cvv:         paymentRequest.PaymentSource.CardInfo.CardCvv,
 	}
-	acquiringBank := bank.NewAdquiringBank(p.config)
+	acquiringBank := bank.NewAdquiringBank(p.config, p.logger)
 	response, err := acquiringBank.ProcessPayment(request)
 	if err != nil {
+		p.logger.Error(err.Error())
 		return bank.PaymentResponse{}, err
 	}
 	return response, nil
@@ -104,8 +121,11 @@ func (p *PaymentHandler) sendTransactionRequest(paymentRequest models.PaymentReq
 
 // getMerchantInfo retrieves merchant information from the database by ID.
 func (p *PaymentHandler) getMerchantInfo(id uint) (models.Merchant, error) {
+	p.logger.Info("Getting merchant info")
+
 	merchant, err := p.store.GetMerchant(id)
 	if err != nil {
+		p.logger.Error(err.Error())
 		return models.Merchant{}, err
 	}
 	return merchant, nil
@@ -113,6 +133,8 @@ func (p *PaymentHandler) getMerchantInfo(id uint) (models.Merchant, error) {
 
 // getCustomerInfo retrieves or creates customer information based on the provided details.
 func (p *PaymentHandler) getCustomerInfo(c models.Customer) (models.Customer, error) {
+	p.logger.Info("Getting customer info")
+
 	customer := models.Customer{
 		Name:  c.Name,
 		Email: c.Email,
@@ -120,12 +142,14 @@ func (p *PaymentHandler) getCustomerInfo(c models.Customer) (models.Customer, er
 
 	if c.ID == 0 {
 		if err := p.store.CreateCustomer(&customer); err != nil {
+			p.logger.Error(err.Error())
 			return models.Customer{}, err
 		}
 	} else {
 		var err error
 		customer, err = p.store.GetCustomer(c.ID)
 		if err != nil {
+			p.logger.Error(err.Error())
 			return models.Customer{}, err
 		}
 	}
@@ -135,6 +159,8 @@ func (p *PaymentHandler) getCustomerInfo(c models.Customer) (models.Customer, er
 
 // createPayment creates a payment record in the database based on the payment request and transaction result.
 func (p *PaymentHandler) createPayment(paymentRequest models.PaymentRequest, transactionResult bank.PaymentResponse, customerID uint) (models.Payment, error) {
+	p.logger.Info("Creating payment")
+
 	var status models.PaymentStatus
 	if transactionResult.Success {
 		status = models.Succeeded
@@ -150,6 +176,7 @@ func (p *PaymentHandler) createPayment(paymentRequest models.PaymentRequest, tra
 	}
 
 	if err := p.store.CreatePayment(&payment); err != nil {
+		p.logger.Error(err.Error())
 		return models.Payment{}, err
 	}
 
@@ -158,18 +185,23 @@ func (p *PaymentHandler) createPayment(paymentRequest models.PaymentRequest, tra
 
 // createCreditCard creates a credit card record in the database based on the provided card information and customer ID.
 func (p *PaymentHandler) createCreditCard(cardInfo models.CardInfo, customerID uint) (models.CreditCard, error) {
+	p.logger.Info("Creating credit card")
+
 	err := utils.ValidateCreditCard(cardInfo.CardNumber)
 	if err != nil {
+		p.logger.Error(err.Error())
 		return models.CreditCard{}, err
 	}
 
 	creditCardToken, err := utils.TokenizeCreditCard(cardInfo.CardNumber)
 	if err != nil {
+		p.logger.Error(err.Error())
 		return models.CreditCard{}, err
 	}
 
 	lastFourDigits, err := utils.GetLastFourDigits(cardInfo.CardNumber)
 	if err != nil {
+		p.logger.Error(err.Error())
 		return models.CreditCard{}, err
 	}
 
@@ -185,6 +217,7 @@ func (p *PaymentHandler) createCreditCard(cardInfo models.CardInfo, customerID u
 	}
 
 	if err := p.store.CreateCreditCard(&creditCard); err != nil {
+		p.logger.Error(err.Error())
 		return models.CreditCard{}, err
 	}
 
@@ -199,7 +232,7 @@ func (p *PaymentHandler) generateResponse(
 	customer models.Customer,
 	creditCard models.CreditCard,
 	transactionResult bank.PaymentResponse) models.PaymentResponse {
-
+	p.logger.Info("Generating payment response")
 	paymentResponse := models.PaymentResponse{
 		ID:         payment.ID,
 		OrderToken: payment.OrderToken,
@@ -232,6 +265,8 @@ func (p *PaymentHandler) generateResponse(
 
 // getRedirectUrl determines the redirect URL based on the payment status and callback URLs in the payment request.
 func (p *PaymentHandler) getRedirectUrl(paymentRequest models.PaymentRequest, status models.PaymentStatus) string {
+	p.logger.Info("Getting redirection URL")
+
 	var redirectUrl string
 	switch status {
 	case models.Succeeded:

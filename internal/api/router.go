@@ -3,6 +3,7 @@ package api
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/arielcr/payment-gateway/internal/api/handlers"
@@ -12,22 +13,26 @@ import (
 // Router manages the HTTP routes and handlers for the application.
 type Router struct {
 	Server         *gin.Engine
+	logger         *slog.Logger
 	Port           string
 	PaymentHandler *handlers.PaymentHandler
 	RefundHandler  *handlers.RefundHandler
 }
 
 // NewRouter creates a new instance of Router with the provided port, payment handler, and refund handler.
-func NewRouter(port string, paymentHandler *handlers.PaymentHandler, refundHandler *handlers.RefundHandler) *Router {
+func NewRouter(port string, paymentHandler *handlers.PaymentHandler, refundHandler *handlers.RefundHandler, logger *slog.Logger) *Router {
 	return &Router{
 		Port:           port,
 		PaymentHandler: paymentHandler,
 		RefundHandler:  refundHandler,
+		logger:         logger,
 	}
 }
 
 // InitializeEndpoints sets up the HTTP routes and handlers for the server.
 func (r *Router) InitializeEndpoints() {
+	r.logger.Info("Initializing endpoints")
+
 	server := gin.Default()
 
 	// Health check endpoint
@@ -55,6 +60,8 @@ func (r *Router) InitializeEndpoints() {
 
 // Start starts the HTTP server on the specified port.
 func (r *Router) Start() {
+	r.logger.Info("Starting the web server")
+
 	if err := r.Server.Run(r.Port); err != nil {
 		log.Fatalln("error when server is initializing")
 	}

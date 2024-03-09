@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/arielcr/payment-gateway/internal/config"
@@ -35,35 +36,43 @@ type PaymentResponse struct {
 // AcquiringBank manages interactions with the acquiring bank's API.
 type AcquiringBank struct {
 	config config.Application
+	logger *slog.Logger
 }
 
 // NewAdquiringBank creates a new instance of AcquiringBank with the provided configuration.
-func NewAdquiringBank(config config.Application) AcquiringBank {
+func NewAdquiringBank(config config.Application, logger *slog.Logger) AcquiringBank {
 	return AcquiringBank{
 		config: config,
+		logger: logger,
 	}
 }
 
 // ProcessPayment sends a payment request to the acquiring bank's API and returns the response.
 func (a *AcquiringBank) ProcessPayment(request PaymentRequest) (PaymentResponse, error) {
+	a.logger.Info("Proccesing payment with bank")
+
 	payloadBytes, err := json.Marshal(request)
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
 	resp, err := http.Post(a.config.BankSimulatorHost+"/process", "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
 	var response PaymentResponse
 	if err := json.Unmarshal(responseBody, &response); err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
@@ -72,24 +81,30 @@ func (a *AcquiringBank) ProcessPayment(request PaymentRequest) (PaymentResponse,
 
 // ProcessRefund sends a refund request to the acquiring bank's API and returns the response.
 func (a *AcquiringBank) ProcessRefund(request RefundRequest) (PaymentResponse, error) {
+	a.logger.Info("Processing refund with bank")
+
 	payloadBytes, err := json.Marshal(request)
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
 	resp, err := http.Post(a.config.BankSimulatorHost+"/refund", "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
 	var response PaymentResponse
 	if err := json.Unmarshal(responseBody, &response); err != nil {
+		a.logger.Error(err.Error())
 		return PaymentResponse{}, err
 	}
 
