@@ -16,6 +16,7 @@ type Application struct {
 	ApplicationPort   string `env:"APPLICATION_PORT" envDefault:":8080"`
 	BankSimulatorHost string `env:"BANK_SIMULATOR_HOST" envDefault:"http://bank-simulator:8090/payment"`
 	LogLevel          string `env:"LOG_ENVIRONMENT" envDefault:"development"`
+	SecretKey         string `env:"SECRET_KEY" envDefault:"123456"`
 	Repository        RepositoryParameters
 }
 

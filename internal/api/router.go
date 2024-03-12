@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/arielcr/payment-gateway/internal/api/handlers"
+	"github.com/arielcr/payment-gateway/internal/api/middleware"
+	"github.com/arielcr/payment-gateway/internal/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,15 +16,15 @@ import (
 type Router struct {
 	Server         *gin.Engine
 	logger         *slog.Logger
-	Port           string
+	Config         config.Application
 	PaymentHandler *handlers.PaymentHandler
 	RefundHandler  *handlers.RefundHandler
 }
 
 // NewRouter creates a new instance of Router with the provided port, payment handler, and refund handler.
-func NewRouter(port string, paymentHandler *handlers.PaymentHandler, refundHandler *handlers.RefundHandler, logger *slog.Logger) *Router {
+func NewRouter(config config.Application, paymentHandler *handlers.PaymentHandler, refundHandler *handlers.RefundHandler, logger *slog.Logger) *Router {
 	return &Router{
-		Port:           port,
+		Config:         config,
 		PaymentHandler: paymentHandler,
 		RefundHandler:  refundHandler,
 		logger:         logger,
@@ -34,6 +36,9 @@ func (r *Router) InitializeEndpoints() {
 	r.logger.Info("Initializing endpoints")
 
 	server := gin.Default()
+
+	// Add authentication middleware
+	server.Use(middleware.Authenticate(r.Config))
 
 	// Health check endpoint
 	server.GET("/health", func(c *gin.Context) {
@@ -62,7 +67,7 @@ func (r *Router) InitializeEndpoints() {
 func (r *Router) Start() {
 	r.logger.Info("Starting the web server")
 
-	if err := r.Server.Run(r.Port); err != nil {
+	if err := r.Server.Run(r.Config.ApplicationPort); err != nil {
 		log.Fatalln("error when server is initializing")
 	}
 }

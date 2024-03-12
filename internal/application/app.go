@@ -136,7 +136,7 @@ func (s *Server) initializeStorage() error {
 func (s *Server) initializeRouter() {
 	paymentHandler := handlers.NewPaymentHandler(s.store, s.config, s.logger)
 	refundHandler := handlers.NewRefundHandler(s.store, s.config, s.logger)
-	router := api.NewRouter(s.config.ApplicationPort, paymentHandler, refundHandler, s.logger)
+	router := api.NewRouter(s.config, paymentHandler, refundHandler, s.logger)
 	router.InitializeEndpoints()
 	s.router = router
 }
